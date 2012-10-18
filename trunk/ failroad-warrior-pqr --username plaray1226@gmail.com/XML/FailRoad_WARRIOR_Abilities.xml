@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="utf-8" ?><WARRIOR><Ability><Name>--InitializePvE--</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>if PQR_RotationStarted == true then
+  PQR_RotationStarted = false
+  if PQR_LoadLua
+  then
+   		if PQR_LoadLua(&amp;quot;PQR_failroad.lua&amp;quot;) == false
+   		then 
+      			PQR_WriteToChat(&amp;quot;Put PQR_failroad.lua in the data folder.&amp;quot;, &amp;quot;Error&amp;quot;)
+      			PQR_StopRotation()
+       			return true
+  		end
+  end
+end
+
+--FixLag
+local ping = tonumber((select(3,GetNetStats()) + select(4,GetNetStats())) / 2000) + .025
+
+if ping &amp;lt; .05
+then
+ping = .05
+elseif ping &amp;gt; .3
+then
+ping = .3
+end
+PQR_SpellAvailableTime = ping
+
+
+--FixStance(Based on Spec)
+--Arms
+if GetSpecialization() == 1
+then
+	if GetShapeshiftForm() ~= 1
+	then
+		CastShapeshiftForm(1)
+	end
+
+	if IsEquippedItemType(&amp;quot;shields&amp;quot;)
+	then
+		if UseEquipmentSet(&amp;quot;2HSet&amp;quot;)
+		then
+			return true
+		end
+	end
+end
+
+--Fury
+if GetSpecialization() == 2
+then
+	if GetShapeshiftForm() ~= 1
+	then
+		CastShapeshiftForm(1)
+	end
+
+	if IsEquippedItemType(&amp;quot;shields&amp;quot;)
+	then
+		if UseEquipmentSet(&amp;quot;FurySet&amp;quot;)
+		then
+			return true
+		end
+	end
+end
+
+--Prot
+if GetSpecialization() == 3
+then
+	if GetShapeshiftForm() ~= 2
+	then
+		CastShapeshiftForm(2)
+	end
+
+	if not IsEquippedItemType(&amp;quot;shields&amp;quot;)
+	then
+		if UseEquipmentSet(&amp;quot;ShieldSet&amp;quot;)
+		then
+			return true
+		end
+	end
+end
+
+--Define Custom Targets
+if not custTars
+then
+	custTars = {&amp;quot;target&amp;quot;,&amp;quot;focus&amp;quot;,&amp;quot;arena1&amp;quot;,&amp;quot;arena2&amp;quot;,&amp;quot;arena3&amp;quot;,&amp;quot;arena4&amp;quot;,&amp;quot;arena5&amp;quot;}
+end
+
+--PauseKey
+if IsRightAltKeyDown()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>--InitializePvP--</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>if PQR_RotationStarted == true then
+  PQR_RotationStarted = false
+  if PQR_LoadLua
+  then
+   		if PQR_LoadLua(&amp;quot;PQR_failroad.lua&amp;quot;) == false
+   		then 
+      			PQR_WriteToChat(&amp;quot;Put PQR_failroad.lua in the data folder.&amp;quot;, &amp;quot;Error&amp;quot;)
+      			PQR_StopRotation()
+       			return true
+  		end
+  end
+end
+
+--FixLag
+local ping = tonumber((select(3,GetNetStats()) + select(4,GetNetStats())) / 2000) + .025
+
+if ping &amp;lt; .05
+then
+ping = .05
+elseif ping &amp;gt; .3
+then
+ping = .3
+end
+PQR_SpellAvailableTime = ping
+
+
+--FixStance(Based on Spec)
+--Arms
+if GetSpecialization() == 1
+then
+	if not inCombat()
+	and GetShapeshiftForm() ~= 1
+	then
+		CastShapeshiftForm(1)
+	elseif inCombat()
+	and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 85
+	and GetShapeshiftForm() ~= 3
+	then
+		CastShapeshiftForm(3)
+	elseif inCombat()
+	and getHp(&amp;quot;player&amp;quot;) &amp;gt; 85
+	and GetShapeshiftForm() ~= 1
+	then
+		CastShapeshiftForm(1)
+	end
+end
+
+--Fury
+if GetSpecialization() == 2
+then
+	if not inCombat()
+	and GetShapeshiftForm() ~= 1
+	then
+		CastShapeshiftForm(1)
+	elseif inCombat()
+	and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 85
+	and GetShapeshiftForm() ~= 3
+	then
+		CastShapeshiftForm(3)
+	elseif inCombat()
+	and getHp(&amp;quot;player&amp;quot;) &amp;gt; 85
+	and GetShapeshiftForm() ~= 1
+	then
+		CastShapeshiftForm(1)
+	end
+end
+
+--Prot
+if GetSpecialization() == 3
+then
+	if GetShapeshiftForm() ~= 2
+	then
+		CastShapeshiftForm(2)
+	end
+	if not IsEquippedItemType(&amp;quot;shields&amp;quot;)
+	then
+		if UseEquipmentSet(&amp;quot;ShieldSet&amp;quot;)
+		then
+			return true
+		end
+	end
+end
+
+--Define Custom Targets
+if not custTars
+then
+	custTars = {&amp;quot;target&amp;quot;,&amp;quot;focus&amp;quot;,&amp;quot;arena1&amp;quot;,&amp;quot;arena2&amp;quot;,&amp;quot;arena3&amp;quot;,&amp;quot;arena4&amp;quot;,&amp;quot;arena5&amp;quot;}
+end
+
+--PauseKey
+if IsRightAltKeyDown()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>--Interrupts--</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>local castingTarget = nil
+
+for i=1, #custTars do
+	if not spellReflect(custTars[i])
+	and ( select(9,UnitCastingInfo(custTars[i]))==false 
+		or select(8,UnitChannelInfo(custTars[i]))==false )
+	then
+			castingTarget = custTars[i]
+	end
+end
+
+if castingTarget
+and not spellReflect(castingTarget)
+and not UnitBuffID(&amp;quot;player&amp;quot;,23920)
+then
+local castName = UnitCastingInfo(castingTarget)
+local channelName = UnitChannelInfo(castingTarget)
+local castName = channelName
+--Pum--
+	if select(2,GetSpellCooldown(6552)) == 0
+		and IsSpellInRange(GetSpellInfo(6552),castingTarget)
+		and ( PQR_IsOnInterruptList(castName) or PQR_IsInterruptAll() )
+			then
+			CastSpellByName(GetSpellInfo(6552),castingTarget)
+			PQR_DelayRotation(.5)
+	end
+--DS--
+	if ( select(2,GetSpellCooldown(6552)) ~= 0
+		or IsSpellInRange(GetSpellInfo(6552),castingTarget) == 0
+		)
+		and select(2,GetSpellCooldown(102060)) == 0
+		and CheckInteractDistance(castingTarget,3)
+		and ( PQR_IsOnInterruptList(castName) or PQR_IsInterruptAll() )
+			then
+			CastSpellByName(GetSpellInfo(102060),castingTarget)
+			PQR_DelayRotation(.5)
+	end
+--HT--
+	if ( select(2,GetSpellCooldown(6552)) ~= 0
+		or IsSpellInRange(GetSpellInfo(6552),castingTarget) == 0
+		)
+		and ( select(2,GetSpellCooldown(102060)) ~= 0
+		or not CheckInteractDistance(castingTarget,3)
+		)
+		and select(2,GetSpellCooldown(57755)) == 0
+		and IsSpellInRange(GetSpellInfo(57755),castingTarget) == 1
+		and ( PQR_IsOnInterruptList(castName) or PQR_IsInterruptAll() )
+			then
+			CastSpellByName(GetSpellInfo(57755),castingTarget)
+	end
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_01-Berserk</Name><Default>false</Default><SpellID>18499</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and not UnitBuffID(&amp;quot;player&amp;quot;,12880)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_02-HLeap</Name><Default>false</Default><SpellID>6544</SpellID><Actions></Actions><Lua>if select(2,GetSpellCooldown(6544)) == 0
+and IsLeftControlKeyDown()
+and not GetCurrentKeyBoardFocus()
+then
+	CastSpellByName(GetSpellInfo(6544))
+		if SpellIsTargeting()
+		then 
+			CameraOrSelectOrMoveStart() CameraOrSelectOrMoveStop()
+		end
+		return true 
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_03-DeadlyCalm</Name><Default>false</Default><SpellID>85730</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 40
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_04-HS</Name><Default>false</Default><SpellID>78</SpellID><Actions></Actions><Lua>local tfb, _, _, tfbCount, _, _, tfbExp = UnitBuffID(&amp;quot;player&amp;quot;, 56638)
+local cs,_,_,_,_,_,csExp = UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;)
+
+if	inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+and UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;)
+	then
+		if tfb
+			and ( tfbExp - GetTime() &amp;lt;= 2 )
+			or ( tfbCount == 5 and IsUsableSpell(7384) )
+			or (( cs and csExp - GetTime() &amp;lt;= 2 ) and select(2,GetSpellCooldown(86346)~=0))
+			then return true 
+		elseif UnitBuffID(&amp;quot;player&amp;quot;,85730)
+		or UnitPower(&amp;quot;player&amp;quot;) &amp;gt; 110
+		then return true
+	 end
+	end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_05-MS</Name><Default>false</Default><SpellID>12294</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_06-CS</Name><Default>false</Default><SpellID>86346</SpellID><Actions></Actions><Lua>local cs,_,_,_,_,_,csExp = UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;)
+
+if inCombatAndMelee()
+and ( not cs or csExp - GetTime() &amp;lt;= 1.5 )
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_07-Execute</Name><Default>false</Default><SpellID>5308</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;lt; 20
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_08-OP</Name><Default>false</Default><SpellID>7384</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and IsUsableSpell(7384)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_09-Slam</Name><Default>false</Default><SpellID>1464</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+and ( UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 70 or UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;) )
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_10-BattleShout</Name><Default>false</Default><SpellID>6673</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;lt; 70
+and not UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_11-Slam</Name><Default>false</Default><SpellID>1464</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_12-BattleShout</Name><Default>false</Default><SpellID>6673</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;lt; 70
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>msAoE_SweepingStrikes</Name><Default>false</Default><SpellID>12328</SpellID><Actions></Actions><Lua>if UnitAffectingCombat(&amp;quot;player&amp;quot;)
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 60
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>msAoE_ThunderClap</Name><Default>false</Default><SpellID>6343</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>msAoE_04-HS/Cleave</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>local tfb, _, _, tfbCount, _, _, tfbExp = UnitBuffID(&amp;quot;player&amp;quot;, 56638)
+local cs,_,_,_,_,_,csExp = UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;)
+
+if	inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+and UnitDebuffID(&amp;quot;target&amp;quot;, 86346, &amp;quot;player&amp;quot;)
+	then
+		if tfb
+			and ( tfbExp - GetTime() &amp;lt;= 2 )
+			or ( tfbCount == 5 and IsUsableSpell(7384) )
+			or (( cs and csExp - GetTime() &amp;lt;= 2 ) and select(2,GetSpellCooldown(86346)~=0))
+			then return true 
+		elseif UnitBuffID(&amp;quot;player&amp;quot;,85730)
+		or UnitPower(&amp;quot;player&amp;quot;) &amp;gt; 110
+		then
+			if UnitBuffID(&amp;quot;player&amp;quot;,12328)
+				then
+				CastSpellByName(GetSpellInfo(78),&amp;quot;target&amp;quot;)
+			elseif not UnitBuffID(&amp;quot;player&amp;quot;,12328)
+				then
+				CastSpellByName(GetSpellInfo(845),&amp;quot;target&amp;quot;)
+			end
+	 end
+	end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>msAoE_WW</Name><Default>false</Default><SpellID>1680</SpellID><Actions></Actions><Lua>return true</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_all-Hamstring</Name><Default>false</Default><SpellID>1715</SpellID><Actions></Actions><Lua>local shouldSlow = true
+
+if inCombatAndMelee()
+and ( 
+	  isSlowed(&amp;quot;target&amp;quot;)
+	  or immuneToSlow(&amp;quot;target&amp;quot;)
+	)
+then
+	shouldSlow = false
+end
+
+
+if shouldSlow == false
+and UnitDebuffID(&amp;quot;target&amp;quot;,1715)
+then
+	local hasHamstring, _, _, _, _, _, HendTimer = UnitDebuffID(&amp;quot;target&amp;quot;, 1715)
+	if hasHamstring then
+		if HendTimer - GetTime() &amp;lt; 1 then
+			return true
+		end
+	end
+end
+		
+		
+if inCombatAndMelee()
+and shouldSlow == true
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_all-Disarm</Name><Default>false</Default><SpellID>676</SpellID><Actions></Actions><Lua>local useAbility = nil
+
+for i=1, #custTars do
+	if inCombat()
+		and shouldDisarm(custTars[i])
+		and IsSpellInRange(GetSpellInfo(676),custTars[i]) == 1
+		then 
+			PQR_CustomTarget = custTars[i]
+			useAbility = true
+	end
+end
+
+
+if inCombatAndMelee()
+	and IsLeftShiftKeyDown()
+	and select(2,GetSpellCooldown(676)) == 0
+	then
+	PQR_CustomTarget = &amp;quot;target&amp;quot;
+	useAbility = true
+end
+
+
+if useAbility == true
+and not UnitBuffID(&amp;quot;target&amp;quot;,110700)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Custom</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_ms-SR/SW</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>local sRcheck = false
+local shieldWall = false
+
+
+for i=1, #custTars do
+if spellReflect(custTars[i]) == 1
+then
+	sRcheck = true
+end
+end
+
+if IsLeftAltKeyDown()
+then
+	sRcheck = true
+end
+
+
+if inCombat()
+and select(2,GetSpellCooldown(871))==0
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 35
+then
+	shieldWall = true
+end
+
+if sRcheck == true
+and select(2,GetSpellCooldown(23920))==0
+and not UnitBuffID(&amp;quot;player&amp;quot;,23920)
+then
+	if UseEquipmentSet(&amp;quot;ShieldSet&amp;quot;) 
+		then
+		CastSpellByName(GetSpellInfo(23920),nil)
+		return true
+	end
+end
+
+if shieldWall == true
+and not UnitBuffID(&amp;quot;player&amp;quot;,871)
+then
+	if UseEquipmentSet(&amp;quot;ShieldSet&amp;quot;)
+		then
+		CastSpellByName(GetSpellInfo(871),nil)
+		return true
+	end
+end
+
+
+
+if ( sRcheck == false or shieldWall == false )
+and IsEquippedItemType(&amp;quot;shields&amp;quot;)
+and not UnitBuffID(&amp;quot;player&amp;quot;,23920)
+and not UnitBuffID(&amp;quot;player&amp;quot;,871)
+then
+	if UseEquipmentSet(&amp;quot;2HSet&amp;quot;)
+		then
+		return true
+	end
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_msFur-DieByTheSword</Name><Default>false</Default><SpellID>118038</SpellID><Actions></Actions><Lua>if inCombat()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 50
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_all-ShatteringThrow</Name><Default>false</Default><SpellID>64382</SpellID><Actions></Actions><Lua>for i=1, #custTars do
+if inCombat()
+and isImmune(custTars[i])
+and IsSpellInRange(GetSpellInfo(57755),custTars[i]) == 1
+and UnitExists(custTars[i])
+and PQR_IsMoving() == false
+	then
+		PQR_CustomTarget = custTars[i]
+		return true
+	end
+end</Lua><RecastDelay>0</RecastDelay><Target>Custom</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_all-RallyingCry</Name><Default>false</Default><SpellID>97462</SpellID><Actions></Actions><Lua>if inCombat()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 30
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_all-VR</Name><Default>false</Default><SpellID>34428</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 80
+and IsUsableSpell(34428)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_02-HLeap</Name><Default>false</Default><SpellID>6544</SpellID><Actions></Actions><Lua>if select(2,GetSpellCooldown(6544)) == 0
+and IsLeftControlKeyDown()
+and not GetCurrentKeyBoardFocus()
+then
+	CastSpellByName(GetSpellInfo(6544))
+		if SpellIsTargeting()
+		then 
+			CameraOrSelectOrMoveStart()
+			CameraOrSelectOrMoveStop()
+		end
+		return true 
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_01-Berserk</Name><Default>false</Default><SpellID>18499</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and not UnitBuffID(&amp;quot;player&amp;quot;,12880)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_03-DeadlyCalm</Name><Default>false</Default><SpellID>85730</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 40
+and UnitDebuffID(&amp;quot;target&amp;quot;,86346,&amp;quot;player&amp;quot;)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_04-HS</Name><Default>false</Default><SpellID>78</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+	then
+		if UnitDebuffID(&amp;quot;target&amp;quot;,86346,&amp;quot;player&amp;quot;)
+		and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 40
+			then return true
+		elseif UnitBuffID(&amp;quot;player&amp;quot;,85730)
+		and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 30
+			then return true
+		end
+elseif inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 110
+then return true
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_05-BT</Name><Default>false</Default><SpellID>23881</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+then return true
+elseif inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;lt; 20
+and UnitPower(&amp;quot;player&amp;quot;) &amp;lt;= 30
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_06-WS</Name><Default>false</Default><SpellID>100130</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitBuffID(&amp;quot;player&amp;quot;,46916)
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+and select(2,GetSpellCooldown(23881)) + (select(1,GetSpellCooldown(23881)) - GetTime()) &amp;gt; 0
+and select(2,GetSpellCooldown(23881)) + (select(1,GetSpellCooldown(23881)) - GetTime()) &amp;lt;= 1
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_07-Wait</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>if inCombat()
+and select(2,GetSpellCooldown(23881)) + (select(1,GetSpellCooldown(23881)) - GetTime()) &amp;gt; 0
+and select(2,GetSpellCooldown(23881)) + (select(1,GetSpellCooldown(23881)) - GetTime()) &amp;lt;= 1
+then 
+	PQR_DelayRotation(select(2,GetSpellCooldown(23881)) + (select(1,GetSpellCooldown(23881)) - GetTime()))
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_08-CS</Name><Default>false</Default><SpellID>86346</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_09-Execute</Name><Default>false</Default><SpellID>5308</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_10-RB</Name><Default>false</Default><SpellID>85288</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitBuffID(&amp;quot;player&amp;quot;,131116)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_11-WS</Name><Default>false</Default><SpellID>100130</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitBuffID(&amp;quot;player&amp;quot;,46916)
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_12-DR</Name><Default>false</Default><SpellID>118000</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_13-BattleShout</Name><Default>false</Default><SpellID>6673</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;lt; 70
+and not UnitDebuffID(&amp;quot;target&amp;quot;,86346)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_14-WS</Name><Default>false</Default><SpellID>100130</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitDebuffID(&amp;quot;target&amp;quot;,86346,&amp;quot;player&amp;quot;)
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_15-WS</Name><Default>false</Default><SpellID>100130</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and select(2,GetSpellCooldown(86346)) + (select(1,GetSpellCooldown(86346)) - GetTime()) &amp;gt;= 1
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 60
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>fur_16-BattleShout</Name><Default>false</Default><SpellID>6673</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;lt; 70
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>furAoE_WW</Name><Default>false</Default><SpellID>1680</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>furAoE_Cleave</Name><Default>false</Default><SpellID>845</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;target&amp;quot;) &amp;gt;= 20
+	then
+		if UnitDebuffID(&amp;quot;target&amp;quot;,86346,&amp;quot;player&amp;quot;)
+		and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 40
+			then return true
+		elseif UnitBuffID(&amp;quot;player&amp;quot;,85730)
+		and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 30
+			then return true
+		end
+elseif inCombatAndMelee()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 110
+then return true
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>furAoE_RB</Name><Default>false</Default><SpellID>85288</SpellID><Actions></Actions><Lua>return true</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_01-Berserk</Name><Default>false</Default><SpellID>18499</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and not UnitBuffID(&amp;quot;player&amp;quot;,12880)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_02-HeroicLeap</Name><Default>false</Default><SpellID>6544</SpellID><Actions></Actions><Lua>if select(2,GetSpellCooldown(6544)) == 0
+and IsLeftControlKeyDown()
+and not GetCurrentKeyBoardFocus()
+then
+	CastSpellByName(GetSpellInfo(6544))
+		if SpellIsTargeting()
+		then 
+			CameraOrSelectOrMoveStart()
+			CameraOrSelectOrMoveStop()
+		end
+		return true 
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_03-HS/Cleav</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and ( UnitBuffID(&amp;quot;player&amp;quot;,122510) or UnitPower(&amp;quot;player&amp;quot;) &amp;gt; 90 )
+	then
+		if IsLeftAltKeyDown()
+		 	then
+		 		CastSpellByName(GetSpellInfo(845))
+		 elseif not IsLeftAltKeyDown()
+		 	then
+		 		CastSpellByName(GetSpellInfo(78))
+		 end
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_06-Rev</Name><Default>false</Default><SpellID>6572</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_05-SS</Name><Default>false</Default><SpellID>23922</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_07-BattleShout</Name><Default>false</Default><SpellID>6673</SpellID><Actions></Actions><Lua>if inCombat()
+and UnitPower(&amp;quot;player&amp;quot;) &amp;lt; 70
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_04-Tclap</Name><Default>false</Default><SpellID>6343</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and (not UnitDebuffID(&amp;quot;target&amp;quot;,115798) or IsLeftAltKeyDown())
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>prot_08-Dev</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then
+	CastSpellByName(GetSpellInfo(20243))
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>PvP_Prot-SpellReflect</Name><Default>false</Default><SpellID>23920</SpellID><Actions></Actions><Lua>for i=1, #custTars do
+if spellReflect(custTars[i]) == 1
+then
+	return true
+end
+
+if IsLeftAltKeyDown()
+then
+	return true
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Def_LastStand</Name><Default>false</Default><SpellID>12975</SpellID><Actions></Actions><Lua>if UnitAffectingCombat(&amp;quot;player&amp;quot;)
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 15
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Def_DemoShout</Name><Default>false</Default><SpellID>1160</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 50
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Def_VictoryRush</Name><Default>false</Default><SpellID>34428</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 80
+and IsUsableSpell(34428)
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Def_ShieldBlock/Barrier</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>if inCombat()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 95
+and UnitPower(&amp;quot;player&amp;quot;) &amp;gt;= 60
+then
+		if IsLeftAltKeyDown()
+		 	then
+		 		CastSpellByName(GetSpellInfo(2565))
+		 elseif not IsLeftAltKeyDown()
+		 	then
+		 		CastSpellByName(GetSpellInfo(112048))
+		 end
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Def_ShieldWall</Name><Default>false</Default><SpellID>871</SpellID><Actions></Actions><Lua>if inCombat()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 35
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Def_RallyingCry</Name><Default>false</Default><SpellID>97462</SpellID><Actions></Actions><Lua>if inCombat()
+and getHp(&amp;quot;player&amp;quot;) &amp;lt;= 25
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Player</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_PvE-HT</Name><Default>false</Default><SpellID>57755</SpellID><Actions></Actions><Lua>if inCombat()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>ms_PvE-DR</Name><Default>false</Default><SpellID>118000</SpellID><Actions></Actions><Lua>if inCombatAndMelee()
+then return true end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></WARRIOR>
