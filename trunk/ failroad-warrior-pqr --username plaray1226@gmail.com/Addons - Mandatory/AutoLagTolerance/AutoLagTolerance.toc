@@ -1,0 +1,10 @@
+## Interface: 40200
+## Title: AutoLagTolerance
+## Author: Nibelheim
+## Notes: Automatically adjust the Ability Queue's "Custom Lag Tolerance" to your current latency
+## SavedVariables: AutoLagToleranceDB
+## Version: 0.8
+
+## X-WoWI-ID: 18801
+
+Core.lua
