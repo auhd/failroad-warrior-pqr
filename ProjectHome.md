@@ -1,0 +1,1 @@
+http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-bot-maps-profiles/381732-pqr-warrior-all-spec-pvp-pve.html
